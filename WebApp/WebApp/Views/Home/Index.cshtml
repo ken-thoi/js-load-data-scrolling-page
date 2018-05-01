@@ -1,0 +1,70 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div id="result">
+            <div id="0" class="post"></div>
+            <div id="loadMessage" style="display:none;">
+                @*![](~/Content/loader.gif)*@
+                <img src="@Url.Content("~/Content/loader.gif")" alt="Loading..." />
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script type="text/javascript">
+
+        $(window).scroll(function () {
+            if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+                //This is an Ajax method which will fetch the data from server
+                FetchDataFromServer();
+            }
+        });
+
+        $(function () {
+            FetchDataFromServer();
+            $(window).scroll(function () {
+                if ($(window).scrollTop() ==
+                    $(document).height() - $(window).height()) {
+                    if ($('#loadMessage').css('display') == 'none') {
+                        FetchDataFromServer();
+                    }
+                }
+            });
+        });
+
+        function FetchDataFromServer() {
+            $("#loadMessage").toggle();
+            var id = $(".post:last").attr("id");
+            $.ajax("/Home/FetchData", {
+                type: "GET",
+                contentType: "application/json",
+                data: { pageIndex: id },
+                dataType: "json",
+                success: function (data) {
+                    debugger;
+                    var postsTemplate = $.templates("#posts");
+                    var html = postsTemplate.render(data);
+                    $(".post:last").after(html);
+                    $("#loadMessage").toggle();
+                },
+                error: function () {
+                    $("#loadMessage").toggle();
+                }
+            });
+        };
+
+    </script>
+
+    <script type="text/x-jsrender" id="posts">
+        <div id="{{:Id}}" class="post">
+            ##{{:Id}}: <b>{{:Date}}</b>
+            <p>{{:Title}}</p>
+            <p>{{:Content}}</p>
+            <hr />
+        </div>
+    </script>
+}
